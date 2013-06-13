@@ -1,5 +1,4 @@
 #include "reNX.cpp.hpp"
-#include "NXNode.hpp"
 #include <stdint.h>
 #include "mmap.hpp"
 
@@ -25,18 +24,20 @@ reNX::NXFile::NXFile(const char *n) {
 }
 
 reNX::NXFile::~NXFile() {
-	delete _base;
+	delete[] _nodes;
 	delete _mmap;
 }
 
 const reNX::NXNode& reNX::NXFile::base() const {
-	return *_base->_wrapper;
+	return *_nodes;
 }
 
 void reNX::NXFile::parse() {
 	HeaderData* h = reinterpret_cast<HeaderData *>(_mmap->base());
 	if(h->PKG4 != 0x34474B50) throw "Invalid magic.";
-	_base = NXEmptyNode::parse_node(_mmap->base() + h->NodeBlock, 0, this);
+	_nodes = new NXNode[h->NodeCount];
+	_nodes->_data = reinterpret_cast<NodeData *>(_mmap->base() + *reinterpret_cast<uint64_t *>(_mmap->base() + reinterpret_cast<HeaderData *>(_mmap->base())->NodeBlock));
+	_nodes->_file = this;
 }
 
 std::string reNX::NXFile::get_string(uint32_t id) const {

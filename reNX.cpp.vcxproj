@@ -145,7 +145,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mmap.hpp" />
-    <ClInclude Include="NXNode.hpp" />
     <ClInclude Include="reNX.cpp.hpp" />
   </ItemGroup>
   <ItemGroup>
