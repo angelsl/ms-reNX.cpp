@@ -75,12 +75,12 @@ template <typename T> T reNX::NXNode::value() const {
 	throw "Invalid node type.";
 }
 
-reNX::NXNode *const reNX::NXNode::begin() const {
+reNX::NXNode const *reNX::NXNode::begin() const {
 	throw "Not implemented"; // TODO: Initialise children
 	return _file->_nodes + _data->FirstChildID;
 }
 
-reNX::NXNode *const reNX::NXNode::end() const {
+reNX::NXNode const *reNX::NXNode::end() const {
 	throw "Not implemented"; // TODO: Initialise children
 	return _file->_nodes + _data->FirstChildID + _data->ChildCount;
 }

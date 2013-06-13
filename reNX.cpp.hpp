@@ -50,8 +50,8 @@ namespace reNX {
 		const NXNode &child(const char *) const;
 		const NXNode &child(const ::std::string&) const;
 
-		NXNode *const begin() const;
-		NXNode *const end() const;
+		NXNode const *begin() const;
+		NXNode const *end() const;
 		
 		bool operator ==(NXNode n) const { return n._data == _data && n._file == _file; }
 		bool operator !=(NXNode n) const { return !(*this == n); }
