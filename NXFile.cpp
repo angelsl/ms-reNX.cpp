@@ -29,13 +29,13 @@ reNX::NXFile::~NXFile() {
 	delete _mmap;
 }
 
-const reNX::NXNode reNX::NXFile::base() const {
+const reNX::NXNode& reNX::NXFile::base() const {
 	return *_base->_wrapper;
 }
 
 void reNX::NXFile::parse() {
-	if(reinterpret_cast<HeaderData *>(_mmap->base())->PKG4 != 0x34474B50) throw "Invalid magic.";
 	HeaderData* h = reinterpret_cast<HeaderData *>(_mmap->base());
+	if(h->PKG4 != 0x34474B50) throw "Invalid magic.";
 	_base = NXEmptyNode::parse_node(_mmap->base() + h->NodeBlock, 0, this);
 }
 

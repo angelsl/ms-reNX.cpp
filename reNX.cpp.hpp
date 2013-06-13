@@ -57,17 +57,17 @@ namespace reNX {
 
 		std::string name() const;
 		const NXFile *const file() const;
-		const NXNode parent() const;
+		const NXNode& parent() const;
 		NXDataType type() const;
 		size_t size() const;
 		uint32_t length() const;
 
 		bool exists() const;
 
-		const NXNode operator [](const char *n) const;
-		const NXNode operator [](const ::std::string&) const;
-		const NXNode child(const char *n) const;
-		const NXNode child(const ::std::string&) const;
+		const NXNode& operator [](const char *n) const;
+		const NXNode& operator [](const ::std::string&) const;
+		const NXNode& child(const char *n) const;
+		const NXNode& child(const ::std::string&) const;
 
 		const_iterator begin() const;
 		const_iterator end() const;
@@ -89,7 +89,7 @@ namespace reNX {
 	public:
 		NXFile(const char * fn);
 		~NXFile();
-		const NXNode base() const;
+		const NXNode& base() const;
 
 		friend class NXNode;
 		friend class NXEmptyNode;

@@ -39,7 +39,7 @@ const reNX::NXFile *const reNX::NXNode::file() const {
 	return const_cast<const NXFile *const>(_node->_file);
 }
 
-const reNX::NXNode reNX::NXNode::parent() const {
+const reNX::NXNode& reNX::NXNode::parent() const {
 	return *(_node->_parent != nullptr ? _node->_parent->_wrapper : _nullnode);
 }
 
@@ -65,19 +65,19 @@ bool reNX::NXNode::exists() const {
 	return nullptr != _node;
 }
 
-const reNX::NXNode reNX::NXNode::operator [](const char *n) const {
+const reNX::NXNode& reNX::NXNode::operator [](const char *n) const {
 	return child(n);
 }
 
-const reNX::NXNode reNX::NXNode::operator [](const ::std::string& n) const {
+const reNX::NXNode& reNX::NXNode::operator [](const ::std::string& n) const {
 	return child(n);
 }
 
-const reNX::NXNode reNX::NXNode::child(const char *n) const {
+const reNX::NXNode& reNX::NXNode::child(const char *n) const {
 	return child(std::string(n));
 }
 
-const reNX::NXNode reNX::NXNode::child(const ::std::string& n) const {
+const reNX::NXNode& reNX::NXNode::child(const ::std::string& n) const {
 	const NXEmptyNode *r = _node->child(n);
 	return *(r == nullptr ? _nullnode : r->_wrapper);
 }
@@ -110,17 +110,16 @@ reNX::NXEmptyNode *reNX::NXEmptyNode::parse_node(char *p, NXEmptyNode *pn, NXFil
 		case nothing:
 			return create_node(n, pn, f);
 		case int64:
-			return create_parent_node<int64_t>(n, pn, f);
+			return create_valued_node<int64_t>(n, pn, f);
 		case fpoint:
-			return create_parent_node<double>(n, pn, f);
+			return create_valued_node<double>(n, pn, f);
 		case string:
-			return create_parent_node<std::string>(n, pn, f);
+			return create_valued_node<std::string>(n, pn, f);
 		case vector:
-			return create_parent_node<point>(n, pn, f);
+			return create_valued_node<point>(n, pn, f);
 		case canvas:
 		case mp3:
-			// TODO
-			return create_node(n, pn, f);
+			return create_valued_node<char *>(n, pn, f);
 		default:
 			throw "Invalid node type.";
 	}
@@ -132,10 +131,10 @@ reNX::NXEmptyNode *reNX::NXEmptyNode::create_node(NodeData * n, NXEmptyNode *pn,
 	return new NXEmptyNode(n, pn, f);
 }
 
-template <typename T> reNX::NXEmptyNode *reNX::NXEmptyNode::create_parent_node(NodeData * n, NXEmptyNode *pn, NXFile *f)
+template <typename T> reNX::NXEmptyNode *reNX::NXEmptyNode::create_valued_node(NodeData * n, NXEmptyNode *pn, NXFile *f)
 {
-	if(n->ChildCount > 0) return reinterpret_cast<NXEmptyNode *>(new NXValuedParentNode<T>(n, pn, f));
-	return reinterpret_cast<NXEmptyNode *>(new NXValuedNode<T>(n, pn, f));
+	if(n->ChildCount > 0) return new NXValuedParentNode<T>(n, pn, f);
+	return new NXValuedNode<T>(n, pn, f);
 }
 
 size_t reNX::NXEmptyNode::size() const {

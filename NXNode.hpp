@@ -32,7 +32,7 @@ namespace reNX {
 		static child_map empty_map;
 		static NXEmptyNode *parse_node(char *, NXEmptyNode *, NXFile *);
 		static NXEmptyNode *create_node(NodeData *, NXEmptyNode *, NXFile *);
-		template <typename T> static NXEmptyNode *create_parent_node(NodeData *, NXEmptyNode *, NXFile *);
+		template <typename T> static NXEmptyNode *create_valued_node(NodeData *, NXEmptyNode *, NXFile *);
 	protected:
 		NXEmptyNode *_parent;
 		NXFile *_file;
