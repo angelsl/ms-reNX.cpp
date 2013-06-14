@@ -1,53 +1,28 @@
 #include "reNX.cpp.hpp"
 
-namespace reNX {
-	#pragma pack(push, 2)
-	struct NodeData {
-        uint32_t NodeNameID;
-        uint32_t FirstChildID;
-        uint16_t ChildCount;
-        uint16_t Type;
-		union {
-			int64_t Type1;
-			double Type2;
-			uint32_t Type3;
-			struct {
-				int32_t X;
-				int32_t Y;
-			} Type4;
-			struct {
-				uint32_t ID;
-				uint16_t W;
-				uint16_t H;
-			} Type5;
-			struct {
-				uint32_t ID;
-				uint32_t Len;
-			} Type6;
-		};
-	};
-#pragma pack(pop)
+template <typename T> inline int s(T val) {
+    return (T(0) < val) - (val < T(0));
 }
 
-size_t reNX::NXNode::size() const {
-	return _data->ChildCount;
-}
-
-const reNX::NXNode& reNX::NXNode::operator[] (const char *n) const {
-	return child(n);
-}
-
-const reNX::NXNode& reNX::NXNode::operator[] (const ::std::string& n) const {
-	return child(n);
-}
-
-const reNX::NXNode& reNX::NXNode::child(const char *n) const {
-	return child(std::string(n));
-}
+reNX::NXNode *reNX::NXNode::_nullnode = new reNX::NXNode(0);
 
 const reNX::NXNode& reNX::NXNode::child(const ::std::string& n) const {
-	// TODO: Initialise children
-	throw "Not implemented";
+	uint32_t l = _data->FirstChildID;
+	uint32_t m = _data->FirstChildID+_data->ChildCount-1;
+	while (m >= l) {
+		uint32_t c = l + ((m - l) / 2);
+		switch(s(_file->_nodes[c].name().compare(n))) {
+			case -1:
+				l = c+1;
+				break;
+			case 1:
+				m = c-1;
+				break;
+			case 0:
+				return _file->_nodes[c];
+		}
+    }
+	return *_nullnode;
 }
 
 template <> int64_t reNX::NXNode::value<int64_t>() const {
@@ -73,16 +48,6 @@ template <> char *reNX::NXNode::value<char *>() const {
 
 template <typename T> T reNX::NXNode::value() const {
 	throw "Invalid node type.";
-}
-
-reNX::NXNode const *reNX::NXNode::begin() const {
-	throw "Not implemented"; // TODO: Initialise children
-	return _file->_nodes + _data->FirstChildID;
-}
-
-reNX::NXNode const *reNX::NXNode::end() const {
-	throw "Not implemented"; // TODO: Initialise children
-	return _file->_nodes + _data->FirstChildID + _data->ChildCount;
 }
 
 uint32_t reNX::NXNode::length() const {

@@ -5,14 +5,14 @@
 #define RENXCPPMMAPH
 namespace reNX {
 	class MemoryMappedFile {
-		char *_ptr;
+		const char *_ptr;
 
 		HANDLE _file;
 		HANDLE _mapping;
 	public:
 		MemoryMappedFile(const char *filename);
 		~MemoryMappedFile();
-		char *base() { return _ptr; }
+		inline const char *base() const { return _ptr; }
 	};
 }
 #endif
