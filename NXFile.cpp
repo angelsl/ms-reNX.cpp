@@ -20,25 +20,20 @@ namespace reNX {
 
 reNX::NXFile::NXFile(const char *n) {
 	_mmap = new MemoryMappedFile(n);
-	parse();
+	const HeaderData *h = reinterpret_cast<const HeaderData *>(_mmap->base());
+	if(h->PKG4 != 0x34474B50) throw "Invalid magic.";
+	_stable = reinterpret_cast<const uint64_t *>(_mmap->base() + h->StringBlock);
+	_ntable = reinterpret_cast<const NodeData *>(_mmap->base() + h->NodeBlock);
+	_nodes = new NXNode[h->NodeCount];
+	uint32_t nr = h->NodeCount - 1;
+	for(NXNode *node = _nodes + nr; node >= _nodes; --node, --nr)
+	{
+		node->_data = _ntable + nr;
+		node->_file = this;
+	}
 }
 
 reNX::NXFile::~NXFile() {
 	delete[] _nodes;
 	delete _mmap;
-}
-
-void reNX::NXFile::parse() {
-	const HeaderData *h = reinterpret_cast<const HeaderData *>(_mmap->base());
-	if(h->PKG4 != 0x34474B50) throw "Invalid magic.";
-	_stable = reinterpret_cast<const uint64_t *>(_mmap->base() + h->StringBlock);
-	_nodes = new NXNode[h->NodeCount];
-	_nodes->_data = reinterpret_cast<const NodeData *>(_mmap->base() + h->NodeBlock);
-	_nodes->_file = this;
-
-	for(NXNode *node = _nodes + 1; node < (_nodes + h->NodeCount); ++node)
-	{
-		node->_data = _nodes->_data + (node - _nodes);
-		node->_file = this;
-	}
 }

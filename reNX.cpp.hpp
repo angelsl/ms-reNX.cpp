@@ -41,9 +41,9 @@ namespace reNX {
 
 	class NXFile {
 		const uint64_t *_stable;
+		const NodeData *_ntable;
 		NXNode *_nodes;
 		MemoryMappedFile *_mmap;
-		void parse();	
 		inline std::string get_string(uint32_t id) const { const char *p = _mmap->base() + _stable[id]; return std::string(p + 2, *reinterpret_cast<const uint16_t *>(p)); }
 		inline nxstring get_nxstring(uint32_t id) const { const char *p = _mmap->base() + _stable[id]; return std::make_pair(*reinterpret_cast<uint16_t *>(const_cast<char *>(p)), p+2); }
 	public:
@@ -60,6 +60,25 @@ namespace reNX {
 		const NodeData *_data;
 		inline NXNode() {}
 		inline NXNode(int) { _file = nullptr; _data = nullptr; }
+
+		/*struct const_iterator : std::iterator<std::forward_iterator_tag, const NXNode> {
+			uint32_t _id;
+			const NXFile *_file;
+			const_iterator(uint32_t id, const NXFile *file) : _id(id), _file(file) {}
+
+		public:
+			inline bool operator ==(const const_iterator& t) const { return t._id == _id && t._file == _file; }
+			inline bool operator !=(const const_iterator& t) const { return t._id != _id || t._file != _file; }
+
+			inline const_iterator& operator ++() { ++_id; return *this; }
+			inline const_iterator operator ++(int) { auto o = *this; ++_id; return o; }
+
+			inline reference operator *() const { return const_cast<const NXNode&>(_file->_nodes[_id]); }
+			inline pointer operator ->() const { return const_cast<const NXNode *>(_file->_nodes + _id); }
+
+			friend class NXNode;
+		};*/
+
 	public:
 		inline std::string name() const { return _file->get_string(_data->NodeNameID); }
 		inline nxstring nxname() const { return _file->get_nxstring(_data->NodeNameID); }
