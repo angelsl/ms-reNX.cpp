@@ -1,21 +1,14 @@
 #include <stdint.h>
+#include <cstring>
 #include <string>
-#include <unordered_map>
-#include <iterator>
 #include "mmap.hpp"
-
-#ifdef RENXCPP_EXPORTS
-#define RENXCPP_API __declspec(dllexport)
-#else
-#define RENXCPP_API __declspec(dllimport)
-#endif
 
 #ifndef RENXCPPH
 #define RENXCPPH
 namespace reNX {
-	class RENXCPP_API NXNode;
-	class RENXCPP_API NXFile;
-	enum RENXCPP_API NXDataType;
+	class NXNode;
+	class NXFile;
+	enum NXDataType;
 #pragma pack(push, 2)
 	struct NodeData {
         uint32_t NodeNameID;
@@ -44,23 +37,24 @@ namespace reNX {
 #pragma pack(pop)
 
 	typedef std::pair<int32_t, int32_t> point;
+	typedef std::pair<uint16_t, const char *> nxstring;
 
-	class RENXCPP_API NXFile {
+	class NXFile {
 		const uint64_t *_stable;
 		NXNode *_nodes;
 		MemoryMappedFile *_mmap;
 		void parse();	
 		inline std::string get_string(uint32_t id) const { const char *p = _mmap->base() + _stable[id]; return std::string(p + 2, *reinterpret_cast<const uint16_t *>(p)); }
+		inline nxstring get_nxstring(uint32_t id) const { const char *p = _mmap->base() + _stable[id]; return std::make_pair(*reinterpret_cast<uint16_t *>(const_cast<char *>(p)), p+2); }
 	public:
 		NXFile(const char *fn);
 		~NXFile();
 		inline const NXNode& base() const { return *_nodes; }
 
 		friend class NXNode;
-		friend class NXNode;
 	};
 
-	class RENXCPP_API NXNode {
+	class NXNode {
 		static NXNode *_nullnode;
 		const NXFile *_file;
 		const NodeData *_data;
@@ -68,6 +62,7 @@ namespace reNX {
 		inline NXNode(int) { _file = nullptr; _data = nullptr; }
 	public:
 		inline std::string name() const { return _file->get_string(_data->NodeNameID); }
+		inline nxstring nxname() const { return _file->get_nxstring(_data->NodeNameID); }
 		inline NXDataType type() const { return static_cast<NXDataType>(_data->Type); }
 		inline size_t size() const { return _data->ChildCount; }
 		inline bool exists() const { return _data != nullptr; }
@@ -75,21 +70,24 @@ namespace reNX {
 		template <typename T> T value() const;
 		uint32_t length() const;
 
-		inline const NXNode &operator[] (const char *n) const { return child(std::string(n)); }
-		inline const NXNode &operator[] (const ::std::string& n) const { return child(n); }
-		inline const NXNode &child(const char *n) const { return child(std::string(n)); }
-		const NXNode &child(const ::std::string&) const;
+		inline const NXNode &operator[] (const char *n) const { return child(n, static_cast<uint16_t>(std::strlen(n))); }
+		inline const NXNode &operator[] (const ::std::string& n) const { return child(n.c_str()); }
+		inline const NXNode &operator[] (const nxstring& n) const { return child(n.second, n.first); }
+		inline const NXNode &child(const char *n) const { return child(n, static_cast<uint16_t>(std::strlen(n))); }
+		inline const NXNode &child(const ::std::string& n) const { return child(n.c_str()); }
+		inline const NXNode &child(const nxstring& n) const { return child(n.second, n.first); }
+		const NXNode& child(const char *n, uint16_t nl) const;
 
 		inline const NXNode *begin() const { return _file->_nodes + _data->FirstChildID; }
 		inline const NXNode *end() const { return _file->_nodes + _data->FirstChildID + _data->ChildCount; }
 		
-		bool operator ==(NXNode n) const { return n._data == _data && n._file == _file; }
-		bool operator !=(NXNode n) const { return !(*this == n); }
+		inline bool operator ==(NXNode n) const { return n._data == _data && n._file == _file; }
+		inline bool operator !=(NXNode n) const { return n._data != _data || n._file != _file; }
 
 		friend class NXFile;
 	};
 
-	enum RENXCPP_API NXDataType {
+	enum NXDataType {
 		nothing, int64, fpoint, string, vector, canvas, mp3
 	};
 }

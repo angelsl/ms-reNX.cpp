@@ -4,14 +4,19 @@ template <typename T> inline int s(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
+inline int nncmp(const uint16_t *ll, const char *r, uint16_t rl) {
+	int memcmp = std::memcmp(reinterpret_cast<const char *>(ll) + 2, r, (*ll) < rl ? (*ll) : rl);
+	return s(memcmp == 0 ? (*ll)-rl : memcmp);
+}
+
 reNX::NXNode *reNX::NXNode::_nullnode = new reNX::NXNode(0);
 
-const reNX::NXNode& reNX::NXNode::child(const ::std::string& n) const {
+const reNX::NXNode& reNX::NXNode::child(const char *n, uint16_t nl) const {
 	uint32_t l = _data->FirstChildID;
 	uint32_t m = _data->FirstChildID+_data->ChildCount-1;
 	while (m >= l) {
 		uint32_t c = l + ((m - l) / 2);
-		switch(s(_file->_nodes[c].name().compare(n))) {
+		switch(nncmp(reinterpret_cast<const uint16_t *>(_file->_mmap->base() + _file->_stable[_file->_nodes[c]._data->NodeNameID]), n, nl)) {
 			case -1:
 				l = c+1;
 				break;
@@ -37,6 +42,10 @@ template <> std::string reNX::NXNode::value<std::string>() const {
 	return _file->get_string(_data->Type3);
 }
 
+template <> reNX::nxstring reNX::NXNode::value<reNX::nxstring>() const {
+	return _file->get_nxstring(_data->Type3);
+}
+
 template <> reNX::point reNX::NXNode::value<reNX::point>() const {
 	return point(_data->Type4.X, _data->Type4.Y);
 }
@@ -59,4 +68,5 @@ uint32_t reNX::NXNode::length() const {
 		default:
 			throw "Invalid node type.";
 	}
+	return 0;
 }
