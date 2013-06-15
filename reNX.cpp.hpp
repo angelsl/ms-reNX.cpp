@@ -8,7 +8,10 @@
 namespace reNX {
 	class NXNode;
 	class NXFile;
-	enum NXDataType;
+
+	enum NXDataType {
+		nothing, int64, fpoint, string, vector, canvas, mp3
+	};
 #pragma pack(push, 2)
 	struct NodeData {
         uint32_t NodeNameID;
@@ -104,10 +107,6 @@ namespace reNX {
 		inline bool operator !=(NXNode n) const { return n._data != _data || n._file != _file; }
 
 		friend class NXFile;
-	};
-
-	enum NXDataType {
-		nothing, int64, fpoint, string, vector, canvas, mp3
 	};
 }
 #endif
