@@ -30,7 +30,7 @@ void test(const char *name, void (*m)(), bool deletef) {
 		uint64_t dif = c2 - c1;
 		if (dif < best) best = dif;
 	} while (gethpc() - c0 < freq >> 1);
-	printf("%s: %luuus ", name, best * 1000000ULL / freq);
+	printf("%s: %lluus ", name, best * 1000000ULL / freq);
 }
 #elif defined RENXCPP_LNX
 #include <time.h>
