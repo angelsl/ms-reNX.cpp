@@ -14,10 +14,10 @@ namespace reNX {
 	};
 #pragma pack(push, 2)
 	struct NodeData {
-        uint32_t NodeNameID;
-        uint32_t FirstChildID;
-        uint16_t ChildCount;
-        uint16_t Type;
+		uint32_t NodeNameID;
+		uint32_t FirstChildID;
+		uint16_t ChildCount;
+		uint16_t Type;
 		union {
 			int64_t Type1;
 			double Type2;
@@ -63,24 +63,6 @@ namespace reNX {
 		const NodeData *_data;
 		inline NXNode() {}
 		inline NXNode(int) { _file = nullptr; _data = nullptr; }
-
-		/*struct const_iterator : std::iterator<std::forward_iterator_tag, const NXNode> {
-			uint32_t _id;
-			const NXFile *_file;
-			const_iterator(uint32_t id, const NXFile *file) : _id(id), _file(file) {}
-
-		public:
-			inline bool operator ==(const const_iterator& t) const { return t._id == _id && t._file == _file; }
-			inline bool operator !=(const const_iterator& t) const { return t._id != _id || t._file != _file; }
-
-			inline const_iterator& operator ++() { ++_id; return *this; }
-			inline const_iterator operator ++(int) { auto o = *this; ++_id; return o; }
-
-			inline reference operator *() const { return const_cast<const NXNode&>(_file->_nodes[_id]); }
-			inline pointer operator ->() const { return const_cast<const NXNode *>(_file->_nodes + _id); }
-
-			friend class NXNode;
-		};*/
 
 	public:
 		inline std::string name() const { return _file->get_string(_data->NodeNameID); }
