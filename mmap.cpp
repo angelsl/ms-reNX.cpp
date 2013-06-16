@@ -16,8 +16,8 @@
 reNX::MemoryMappedFile::MemoryMappedFile(const char *filename) {
 #if defined RENXCPP_WIN
 	_ptr = 0;
-	if((_file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE ||
-		(_mapping = CreateFileMapping(_file, NULL, PAGE_READONLY, 0, 0, NULL)) == NULL ||
+	if((_file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE ||
+		(_mapping = CreateFileMappingA(_file, NULL, PAGE_READONLY, 0, 0, NULL)) == NULL ||
 		(_ptr = reinterpret_cast<char *>(MapViewOfFile(_mapping, FILE_MAP_READ, 0, 0, 0))) == 0) return;
 #elif defined RENXCPP_LNX
 	_ptr = const_cast<const char *>(reinterpret_cast<char *>(MAP_FAILED));
