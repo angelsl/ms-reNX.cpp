@@ -12,33 +12,9 @@ inline int nncmp(const uint16_t *ll, const char *r, uint16_t rl) {
 namespace reNX {
 	NXNode *NXNode::_nullnode = new NXNode(0);
 
-	template <> int64_t NXNode::value<int64_t>() const {
-		return _data->Type1;
-	}
-
-	template <> double NXNode::value<double>() const {
-		return _data->Type2;
-	}
-
-	template <> std::string NXNode::value<std::string>() const {
-		return _file->get_string(_data->Type3);
-	}
-
-	template <> nxstring NXNode::value<nxstring>() const {
-		return _file->get_nxstring(_data->Type3);
-	}
-
-	template <> point NXNode::value<point>() const {
-		return point(_data->Type4.X, _data->Type4.Y);
-	}
-
 	template <> char *NXNode::value<char *>() const {
 		// TODO
 		return nullptr;
-	}
-
-	template <typename T> T NXNode::value() const {
-		throw "Invalid node type.";
 	}
 
 	uint32_t NXNode::length() const {
@@ -53,7 +29,7 @@ namespace reNX {
 		return 0;
 	}
 	
-		const NXNode& NXNode::child(const char *n, uint16_t nl) const {
+	const NXNode& NXNode::child(const char *n, uint16_t nl) const {
 		uint32_t l = _data->FirstChildID;
 		uint32_t m = _data->FirstChildID+_data->ChildCount-1;
 		while (m >= l) {

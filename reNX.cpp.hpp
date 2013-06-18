@@ -12,6 +12,7 @@ namespace reNX {
 	enum NXDataType {
 		nothing, int64, fpoint, string, vector, canvas, mp3
 	};
+
 #pragma pack(push, 2)
 	struct NodeData {
 		uint32_t NodeNameID;
@@ -42,7 +43,7 @@ namespace reNX {
 	typedef std::pair<int32_t, int32_t> point;
 	typedef std::pair<uint16_t, const char *> nxstring;
 
-	class NXFile {
+	class NXFile final {
 		const uint64_t *_stable;
 		const NodeData *_ntable;
 		NXNode *_nodes;
@@ -57,7 +58,7 @@ namespace reNX {
 		friend class NXNode;
 	};
 
-	class NXNode {
+	class NXNode final {
 		static NXNode *_nullnode;
 		const NXFile *_file;
 		const NodeData *_data;
@@ -71,7 +72,13 @@ namespace reNX {
 		inline size_t size() const { return _data->ChildCount; }
 		inline bool exists() const { return _data != nullptr; }
 		
-		template <typename T> T value() const;
+		template <typename T> inline T value() const { throw "Invalid node type."; }
+		template <> inline int64_t value<int64_t>() const { return _data->Type1; }
+		template <> inline double value<double>() const { return _data->Type2; }
+		template <> inline std::string value<std::string>() const { return _file->get_string(_data->Type3); }
+		template <> inline nxstring value<nxstring>() const { return _file->get_nxstring(_data->Type3); }
+		template <> inline point value<point>() const { return point(_data->Type4.X, _data->Type4.Y); }
+		template <> char *value<char *>() const;
 		uint32_t length() const;
 
 		inline const NXNode &operator[] (const char *n) const { return child(n, static_cast<uint16_t>(std::strlen(n))); }
