@@ -12,7 +12,6 @@
 #include <fcntl.h>
 #endif
 
-
 reNX::MemoryMappedFile::MemoryMappedFile(const char *filename) {
 #if defined RENXCPP_WIN
 	_ptr = 0;

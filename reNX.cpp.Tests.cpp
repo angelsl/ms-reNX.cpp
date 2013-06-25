@@ -34,7 +34,7 @@ void test(const char *name, void (*m)(), bool deletef) {
 }
 #elif defined RENXCPP_LNX
 #include <time.h>
-#define NXPATH "/home/angelsl/nx/PKG4.nx"
+#define NXPATH "/home/angelsl/Desktop/NX/PKG4.nx"
 reNX::NXFile *f = new reNX::NXFile(NXPATH);
 void test(const char *name, void (*m)(), bool deletef) {
 	setbuf(stdout, NULL);
@@ -66,7 +66,6 @@ void Ss() {
 }
 
 inline void recurse(const reNX::NXNode& N) {
-	++dent;
 	for(auto c : N) { recurse(c); }
 }
 
