@@ -3,9 +3,10 @@
 #include <iomanip>
 #include <vector>
 #include <algorithm>
-#include <cmath>
 
-inline double_t mean50(std::vector<uint64_t> v) {
+#define SEGFAULT() *(int *)0 = 0
+
+inline long double mean50(std::vector<uint64_t> v) {
 	// http://stackoverflow.com/questions/1346824/is-there-any-way-to-find-arithmetic-mean-better-than-sum-n
 	std::vector<uint64_t>::iterator
 		begin = v.begin() + (v.size()*1/4),
@@ -18,48 +19,41 @@ inline double_t mean50(std::vector<uint64_t> v) {
 		rest = rest % size;
 	}
 	
-	return sum + static_cast<double_t>(rest)/size;
+	return sum + static_cast<long double>(rest)/size;
 }
 
 #if defined RENXCPP_WIN
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #define NXPATH "D:\\Misc\\Development\\NX\\PKG4.nx"
-#error Out of date.
-inline uint64_t gethpc() {
-	LARGE_INTEGER n;
-	QueryPerformanceCounter(&n);
-	return n.QuadPart;
-}
+#define PLATFORM_INIT() win32init()
 
-inline uint64_t getfreq() {
+LARGE_INTEGER _begin, _now; uint64_t _freq;
+CONSOLE_SCREEN_BUFFER_INFO _mark; HANDLE _stderr;
+
+inline void mark() { GetConsoleScreenBufferInfo(_stderr, &_mark); }
+inline void snap() { SetConsoleCursorPosition(_stderr, _mark.dwCursorPosition); }
+
+// screw floating point error, really
+template <typename T> inline T norm(T i) { return i*static_cast<T>(1000000)/_freq; }
+inline void lap() { QueryPerformanceCounter(&_begin); }
+inline uint64_t reading() { QueryPerformanceCounter(&_now); return _now.QuadPart - _begin.QuadPart; }
+
+inline void win32init() {
 	LARGE_INTEGER n;
 	QueryPerformanceFrequency(&n);
-	return n.QuadPart;
-}
-
-void test(const char *name, void (*m)(), bool deletef) {
-	uint64_t freq = getfreq();
-	uint64_t best = -1;
-	uint64_t c0 = gethpc();
-	do {
-		uint64_t c1 = gethpc();
-		m();
-		uint64_t c2 = gethpc();
-		if(deletef) delete f;
-		uint64_t dif = c2 - c1;
-		if (dif < best) best = dif;
-	} while (gethpc() - c0 < freq >> 1);
-	printf("%s: %lluus ", name, best * 1000000ULL / freq);
+	_freq = n.QuadPart;
+	_stderr = GetStdHandle(STD_ERROR_HANDLE);
 }
 #elif defined RENXCPP_LNX
 #include <time.h>
 #define NXPATH "/home/angelsl/Desktop/NX/PKG4.nx"
+#define PLATFORM_INIT()
 struct timespec _begin, _now;
 
 inline void mark() { std::cerr << "\x1b[s"; }
 inline void snap() { std::cerr << "\x1b[u\x1b[J"; }
-inline double_t norm(double_t i) { return i; }
+inline double norm(long double i) { return i; }
 inline void lap() { clock_gettime(CLOCK_MONOTONIC_RAW, &_begin); }
 inline uint64_t reading() {
 	clock_gettime(CLOCK_MONOTONIC_RAW, &_now);
@@ -68,18 +62,17 @@ inline uint64_t reading() {
 
 #endif
 
-inline void test(const char *name, uint64_t (*timee)(), uint32_t trials, uint32_t step = 1, void (*prepare)() = nullptr, void (*postpare)() = nullptr) {
-	setbuf(stderr, NULL);
+inline void test(const char *name, uint64_t (*timee)(), uint32_t trials, void (*prepare)() = nullptr, void (*postpare)() = nullptr) {
 	std::vector<uint64_t> result;
 	result.reserve(trials);
 	uint64_t best = -1;
 	mark();
 	if(prepare) prepare();
-	for (uint32_t c = 0; c < trials;) {
-		for (uint d = 0; d < step && c < trials; ++c, ++d) result.push_back(timee());
+	for (uint32_t c = 0; c < trials; ++c) {
+		result.push_back(timee());
 		snap();
-		std::cerr << name << ": " << std::setw(4) << c << '/' << std::left << std::setw(4) << trials << std::right;
-		if (step == 1) std::cerr << "; C" << std::setw(8) << result.back() << " B" << std::setw(8) << (best > result.back() ? best = result.back() : best);
+		std::cerr << name << ": " << std::setw(4) << c+1 << '/' << std::left << std::setw(4) << trials << std::right
+			<< "; C" << std::setw(8) << norm(result.back()) << " B" << std::setw(8) << norm(best > result.back() ? best = result.back() : best);
 	}
 	std::cerr << std::endl;
 	if(postpare) postpare();
@@ -98,7 +91,9 @@ uint64_t Load() {
 }
 
 inline void RecurseHelper(const reNX::NXNode &n) {
-	for(auto m : n) RecurseHelper(m);
+	for(auto m : n) 
+		if(1) RecurseHelper(m);
+		else SEGFAULT();
 }
 
 uint64_t Recurse() {
@@ -119,7 +114,7 @@ uint64_t LoadRecurse() {
 inline void SearchHelper(const reNX::NXNode &n) {
 	for(auto m : n) 
 		if (n[m.nxname()] == m) SearchHelper(m);
-		else *reinterpret_cast<uint64_t *>(0) = 0xDEADDEADDEADDEAD;
+		else SEGFAULT();
 }
 
 uint64_t SearchAll() {
@@ -128,11 +123,12 @@ uint64_t SearchAll() {
 	return reading();
 }
 
-int main()
-{
+int main() {
+	PLATFORM_INIT();
+	setvbuf(stderr, nullptr, _IONBF, 0);
 	std::cout << "Name\t75%t\tM50%\tBest" << std::endl;
 	test("Ld", Load, 0x200);
-	test("Re", Recurse, 0x200, 1, []() { _f = new reNX::NXFile(NXPATH); }, []() { delete _f; });
+	test("Re", Recurse, 0x200, []() { _f = new reNX::NXFile(NXPATH); }, []() { delete _f; });
 	test("LR", LoadRecurse, 0x40);
-	test("SA", SearchAll, 0x40, 1, []() { _f = new reNX::NXFile(NXPATH); }, []() { delete _f; });
+	test("SA", SearchAll, 0x40, []() { _f = new reNX::NXFile(NXPATH); }, []() { delete _f; });
 }

@@ -1,6 +1,3 @@
-// #ifdef __linux__
-// #ifdef _WIN32
-// #if defined __APPLE__ && defined __MACH__
 #include "mmap.hpp"
 #if defined RENXCPP_WIN
 #define WIN32_LEAN_AND_MEAN
