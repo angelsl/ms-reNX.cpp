@@ -12,20 +12,24 @@
 
 #ifndef RENXCPPMMAPH
 #define RENXCPPMMAPH
+
 namespace reNX {
-	class MemoryMappedFile {
-		const char *_ptr;
+    class MemoryMappedFile {
+        const char* _ptr;
 #if defined RENXCPP_WIN
-		HANDLE _file;
-		HANDLE _mapping;
+        HANDLE _file;
+        HANDLE _mapping;
 #elif defined RENXCPP_LNX
 		int _file;
 		off_t _size;
 #endif
-	public:
-		MemoryMappedFile(const char *filename);
-		~MemoryMappedFile();
-		inline const char *base() const { return _ptr; }
-	};
+    public:
+        MemoryMappedFile(const char* filename);
+        ~MemoryMappedFile();
+
+        inline const char* base() const {
+            return _ptr;
+        }
+    };
 }
 #endif

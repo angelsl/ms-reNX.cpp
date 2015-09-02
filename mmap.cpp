@@ -9,12 +9,13 @@
 #include <fcntl.h>
 #endif
 
-reNX::MemoryMappedFile::MemoryMappedFile(const char *filename) {
+reNX::MemoryMappedFile::MemoryMappedFile(const char* filename) {
 #if defined RENXCPP_WIN
-	_ptr = 0;
-	if((_file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE ||
-		(_mapping = CreateFileMappingA(_file, NULL, PAGE_READONLY, 0, 0, NULL)) == NULL ||
-		(_ptr = reinterpret_cast<char *>(MapViewOfFile(_mapping, FILE_MAP_READ, 0, 0, 0))) == 0) return;
+    _ptr = 0;
+    if ((_file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE ||
+        (_mapping = CreateFileMappingA(_file, NULL, PAGE_READONLY, 0, 0, NULL)) == NULL ||
+        (_ptr = reinterpret_cast<char *>(MapViewOfFile(_mapping, FILE_MAP_READ, 0, 0, 0))) == 0)
+        return;
 #elif defined RENXCPP_LNX
 	_ptr = const_cast<const char *>(reinterpret_cast<char *>(MAP_FAILED));
 	struct stat finfo;
@@ -27,9 +28,9 @@ reNX::MemoryMappedFile::MemoryMappedFile(const char *filename) {
 
 reNX::MemoryMappedFile::~MemoryMappedFile() {
 #if defined RENXCPP_WIN
-	if(_ptr != 0) UnmapViewOfFile(_ptr);
-	if(_mapping != NULL) CloseHandle(_mapping);
-	if(_file != INVALID_HANDLE_VALUE) CloseHandle(_file);
+    if (_ptr != 0) UnmapViewOfFile(_ptr);
+    if (_mapping != NULL) CloseHandle(_mapping);
+    if (_file != INVALID_HANDLE_VALUE) CloseHandle(_file);
 #elif defined RENXCPP_LNX
 	if(_ptr != const_cast<const char *>(reinterpret_cast<char *>(MAP_FAILED))) munmap(reinterpret_cast<void *>(const_cast<char *>(_ptr)), _size);
 	if(_file != -1) close(_file);
